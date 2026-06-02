@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-head">
+    <h1>Loan Simulator</h1>
+    <p>Adjust every field. Results update live.</p>
+  </div>
+
+  <!-- LOANS -->
+  <div class="sb-section">
+    <div class="sb-label">Loans</div>
+    <div id="loan-list"></div>
+    <button class="add-loan-btn" onclick="addLoan()">+ add loan</button>
+  </div>
+
+  <!-- PREPAYMENT -->
+  <div class="sb-section">
+    <div class="sb-label">Upfront payment budget</div>
+    <div class="field" style="margin-bottom:.75rem">
+      <label>Total budget ($)</label>
+      <input type="number" id="budget-input" value="10000" min="0" step="500" oninput="calculate()">
+    </div>
+    <div id="prepay-list"></div>
+    <div class="budget-bar"><div class="budget-fill" id="budget-fill" style="width:0%"></div></div>
+    <div class="budget-info"><span id="budget-used">$0 used</span><span id="budget-left">$10,000 left</span></div>
+    <div class="warn-banner" id="budget-warn">Allocation exceeds budget</div>
+    <div class="auto-btns">
+      <button class="auto-btn" onclick="autoAlloc('avalanche')">highest rate</button>
+      <button class="auto-btn" onclick="autoAlloc('snowball')">smallest first</button>
+      <button class="auto-btn" onclick="autoAlloc('interest')">grace interest only</button>
+      <button class="auto-btn" onclick="autoAlloc('one')">all to 1 loan</button>
+      <button class="auto-btn" onclick="autoAlloc('clear')">clear</button>
+    </div>
+  </div>
+
+  <!-- GRACE PERIOD -->
+  <div class="sb-section">
+    <div class="sb-label">Grace period</div>
+    <div class="setting-row">
+      <label>Grace period end date</label>
+      <div class="grace-row">
+        <input type="month" id="grace-end" value="2026-11" oninput="calculate()">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="grace-months-label"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPAYMENT -->
+  <div class="sb-section">
+    <div class="sb-label">Repayment</div>
+    <div class="setting-row">
+      <label>Payoff strategy</label>
+      <div class="strategy-pills">
+        <button class="strategy-pill active" id="sp-avalanche" onclick="setStrategy('avalanche')">Avalanche</button>
+        <button class="strategy-pill" id="sp-snowball" onclick="setStrategy('snowball')">Snowball</button>
+        <button class="strategy-pill" id="sp-order" onclick="setStrategy('order')">In order</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <label>Monthly payment ($)</label>
+      <div class="slider-wrap">
+        <input type="range" id="monthly-slider" min="100" max="2000" step="25" value="400" oninput="syncMonthly(this.value)">
+        <span class="slider-val" id="monthly-display">$400</span>
+      </div>
+      <input type="number" id="monthly-input" class="setting-input" value="400" min="0" step="25" oninput="syncMonthlyInput(this.value)" style="margin-top:4px">
+    </div>
+    <div class="setting-row">
+      <label>Extra monthly payment ($)</label>
+      <input type="number" id="extra-payment" class="setting-input" value="0" min="0" step="25" oninput="calculate()">
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="main-head">
+    <h2>Your payoff <span>forecast</span></h2>
+  </div>
+
+  <div class="metrics" id="metrics"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('chart',this)">Balance over time</button>
+    <button class="tab" onclick="switchTab('breakdown',this)">Loan breakdown</button>
+    <button class="tab" onclick="switchTab('schedule',this)">Year-by-year</button>
+    <button class="tab" onclick="switchTab('grace',this)">Grace period detail</button>
+  </div>
+
+  <div id="panel-chart">
+    <div class="chart-panel">
+      <div class="chart-legend" id="chart-legend"></div>
+      <div class="chart-wrap"><canvas id="mainChart" role="img" aria-label="Loan balance over time"></canvas></div>
+    </div>
+  </div>
+
+  <div id="panel-breakdown" style="display:none">
+    <div class="chart-panel">
+      <table class="data-table" id="breakdown-table"></table>
+    </div>
+  </div>
+
+  <div id="panel-schedule" style="display:none">
+    <div class="chart-panel" style="overflow-x:auto">
+      <table class="data-table" id="schedule-table"></table>
+    </div>
+  </div>
+
+  <div id="panel-grace" style="display:none">
+    <div class="chart-panel">
+      <p style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:1rem">
+        Unsubsidized loans accrue interest during the grace period. Subsidized loans do not.
+        This table shows exactly what happens to each loan before repayment starts.
+      </p>
+      <table class="data-table" id="grace-table"></table>
+    </div>
+  </div>
+</main>
+</div>
+
+
+ <script src="script.js"></script>
+
+</body>
+</html>
