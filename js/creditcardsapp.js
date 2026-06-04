@@ -106,11 +106,48 @@ let rotatingConfig = {
   }
 };
 
+// ── Cards already owned ───────────────────────────────────────────────────────
+// Used as an optional "best card in wallet" overlay in the rewards math.
+let ownedCards = [
+  {
+    id: 'discover_it',
+    name: 'Discover it',
+    rates: {
+      travel: 1, gas: 'rotating', restaurants: 'rotating',
+      supermarkets: 'rotating', streaming: 1, drugstore: 'rotating',
+      gym: 1, default: 1
+    },
+    benefits: '5% rotating categories when activated, 1% other purchases, no annual fee'
+  },
+  {
+    id: 'fidelity',
+    name: 'Fidelity Rewards Visa Signature',
+    rates: { default: 2 },
+    benefits: '2% cash back when redeemed into an eligible Fidelity account, no annual fee'
+  }
+];
+
+let ownedRotatingConfig = {
+  discover_it: {
+    categories: ['gas', 'restaurants', 'drugstore', 'supermarkets'],
+    activeIndex: 0,
+    activeRate: 5,
+    fallbackRate: 1,
+    capLabel: 'up to quarterly max'
+  }
+};
+
 // ── Spending amounts (monthly, by column id) ──────────────────────────────────
 let spending = {
   travel: 200, gas: 80, restaurants: 100, supermarkets: 80,
   streaming: 15, drugstore: 5, gym: 50
 };
+
+// Travel portal estimates: round trip covered, one way covered, no flight covered
+const portalTravelRates = [5, 2.5, 0];
+let portalTravelRateIndex = 0;
+let useOwnedCardMix = false;
+let nextOwnedCardId = 0;
 
 // ── Modal state ───────────────────────────────────────────────────────────────
 let editingCardId = null;
@@ -120,8 +157,170 @@ let editingColId  = null;
 // ── Entry point: render everything ───────────────────────────────────────────
 function renderAll() {
   renderSpendingInputs();
+  renderPortalTravelButton();
   renderTable();
+  renderOwnedCards();
   renderRewards();
+}
+
+function getPortalTravelRate() {
+  return portalTravelRates[portalTravelRateIndex];
+}
+
+function cyclePortalTravelRate() {
+  portalTravelRateIndex = (portalTravelRateIndex + 1) % portalTravelRates.length;
+  renderAll();
+}
+
+function renderPortalTravelButton() {
+  const btn = document.getElementById('portal-rate-btn');
+  if (!btn) return;
+
+  const rate = getPortalTravelRate();
+  const label = rate === 5 ? 'round trip' : rate === 2.5 ? 'one way' : 'no flights';
+  btn.textContent = `Portal travel: ${rate}% (${label})`;
+}
+
+function setOwnedCardMix(checked) {
+  useOwnedCardMix = checked;
+  renderRewards();
+}
+
+function cycleOwnedRotating(cardId) {
+  const rot = ownedRotatingConfig[cardId];
+  if (!rot) return;
+  rot.activeIndex = (rot.activeIndex + 1) % rot.categories.length;
+  renderAll();
+}
+
+function renderOwnedCards() {
+  const section = document.getElementById('owned-cards-section');
+  if (!section) return;
+
+  section.innerHTML = `
+    <div class="section-head">
+      <div>
+        <h3>Cards I already have</h3>
+        <p>Edit cash-back rates here. These can be mixed into the estimate when they beat the card being compared.</p>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="addOwnedCard()">+ Add owned card</button>
+    </div>
+    <div class="owned-table-wrap">
+      <table class="owned-table">
+        <thead>
+          <tr>
+            <th>Card</th>
+            <th>Default %</th>
+            ${columns.filter(c => c.type === 'reward').map(col => `<th>${col.label}</th>`).join('')}
+            <th>Benefits / Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ownedCards.map(card => renderOwnedCardRow(card)).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderOwnedCardRow(card) {
+  const rot = ownedRotatingConfig[card.id];
+  const activeColId = rot ? rot.categories[rot.activeIndex] : null;
+  const activeLabel = activeColId ? getColumnLabel(activeColId) : '';
+  const nextLabel = rot ? getColumnLabel(rot.categories[(rot.activeIndex + 1) % rot.categories.length]) : '';
+  const rewardCols = columns.filter(c => c.type === 'reward');
+
+  return `
+    <tr>
+      <td>
+        <input class="owned-input owned-name-input" type="text" value="${card.name}"
+          oninput="updateOwnedCardName('${card.id}', this.value)">
+        ${rot ? `
+          <button class="rotating-cycle-btn" onclick="cycleOwnedRotating('${card.id}')" title="Change Discover 5% category to ${nextLabel}">
+            5%: ${activeLabel}
+          </button>
+        ` : ''}
+      </td>
+      <td>
+        <input class="owned-input owned-rate-input" type="text" value="${card.rates.default ?? ''}"
+          oninput="updateOwnedCardRate('${card.id}', 'default', this.value)">
+      </td>
+      ${rewardCols.map(col => `
+        <td>
+          <input class="owned-input owned-rate-input" type="text" value="${card.rates[col.id] ?? ''}"
+            placeholder="${card.rates.default ?? 0}"
+            oninput="updateOwnedCardRate('${card.id}', '${col.id}', this.value)">
+        </td>
+      `).join('')}
+      <td>
+        <textarea class="owned-input owned-benefits-input"
+          oninput="updateOwnedCardBenefits('${card.id}', this.value)">${card.benefits || ''}</textarea>
+      </td>
+      <td>
+        <button class="th-edit" onclick="deleteOwnedCard('${card.id}')" title="Delete owned card">×</button>
+      </td>
+    </tr>
+  `;
+}
+
+function getColumnLabel(colId) {
+  return (columns.find(c => c.id === colId) || {}).label || colId;
+}
+
+function updateOwnedCardName(cardId, value) {
+  const card = ownedCards.find(c => c.id === cardId);
+  if (!card) return;
+  card.name = value.trim() || 'Owned card';
+  renderRewards();
+}
+
+function updateOwnedCardBenefits(cardId, value) {
+  const card = ownedCards.find(c => c.id === cardId);
+  if (!card) return;
+  card.benefits = value;
+}
+
+function parseOwnedRateInput(value) {
+  const raw = value.trim().toLowerCase();
+  if (!raw) return null;
+  if (raw === 'rotating') return 'rotating';
+  const parsed = parseFloat(raw);
+  return isNaN(parsed) ? null : parsed;
+}
+
+function updateOwnedCardRate(cardId, rateKey, value) {
+  const card = ownedCards.find(c => c.id === cardId);
+  if (!card) return;
+
+  const parsed = parseOwnedRateInput(value);
+  if (parsed === null) delete card.rates[rateKey];
+  else card.rates[rateKey] = parsed;
+
+  renderRewards();
+}
+
+function addOwnedCard() {
+  const rewardRates = {};
+  columns.filter(c => c.type === 'reward').forEach(col => {
+    rewardRates[col.id] = '';
+  });
+
+  ownedCards.push({
+    id: `owned_${nextOwnedCardId++}`,
+    name: 'New owned card',
+    rates: { default: 1, ...rewardRates },
+    benefits: ''
+  });
+
+  renderAll();
+}
+
+function deleteOwnedCard(cardId) {
+  if (!confirm('Remove this owned card?')) return;
+  ownedCards = ownedCards.filter(c => c.id !== cardId);
+  delete ownedRotatingConfig[cardId];
+  renderAll();
 }
 
 
@@ -194,7 +393,12 @@ function formatCell(card, col) {
   }
 
   if (val === null || val === undefined) return `<span class="rate-none">—</span>`;
-  if (val === 'portal')   return `<span class="rate-portal">5% (portal)</span>`;
+  if (val === 'portal') {
+    const rate = col.id === 'travel' ? getPortalTravelRate() : 5;
+    const rateClass = rate >= 5 ? 'rate-portal' : rate > 0 ? 'rate-low' : 'rate-none';
+    const display = rate > 0 ? `${rate}% (portal)` : `0% (portal)`;
+    return `<span class="${rateClass}">${display}</span>`;
+  }
   if (val === 'rotating') {
     // Legacy fallback for cards without rotatingConfig defined yet
     return `<span class="rate-mid">5% rotating</span>`;
@@ -249,10 +453,47 @@ function cycleRotating(cardId) {
 
 
 // ── Rewards calculation ───────────────────────────────────────────────────────
+function getCardRewardRate(card, col) {
+  const val = card[col.id];
+  const rot = rotatingConfig[card.id];
+
+  if (rot && rot.categories.includes(col.id)) {
+    const isActive = rot.categories[rot.activeIndex] === col.id;
+    return isActive ? 5 : (rot.fallbackRate || 0);
+  }
+
+  if (val == 'rotating') return 5;
+  if (val == 'portal') return col.id === 'travel' ? getPortalTravelRate() : 5;
+  if (val === 'bonus') return 3;
+
+  return parseFloat(val) || 0;
+}
+
+function getOwnedCardRewardRate(card, col) {
+  const categoryRate = card.rates[col.id];
+  const rawRate = categoryRate === undefined || categoryRate === null || categoryRate === ''
+    ? card.rates.default ?? 0
+    : categoryRate;
+  const rot = ownedRotatingConfig[card.id];
+
+  if (rawRate === 'rotating' && rot) {
+    return rot.categories[rot.activeIndex] === col.id ? rot.activeRate : rot.fallbackRate;
+  }
+
+  return parseFloat(rawRate) || 0;
+}
+
+function getBestOwnedCardForColumn(col) {
+  return ownedCards.reduce((best, card) => {
+    const rate = getOwnedCardRewardRate(card, col);
+    if (!best || rate > best.rate) return { card, rate };
+    return best;
+  }, null);
+}
+
 function calcRewards(card) {
   const multiplier  = document.getElementById('two-month-toggle').checked ? 2 : 1;
   const rewardCols  = columns.filter(c => c.type === 'reward');
-  const rot         = rotatingConfig[card.id];
   let total         = 0;
   const breakdown   = [];
 
@@ -260,26 +501,23 @@ function calcRewards(card) {
     const spend = (spending[col.id] || 0) * multiplier;
     if (!spend) continue;
 
-    const val = card[col.id];
-    let rate  = 0;
-
-    // Handle rotating categories with config
-    if (rot && rot.categories.includes(col.id)) {
-      const isActive = rot.categories[rot.activeIndex] === col.id;
-      rate = isActive ? 5 : (rot.fallbackRate || 0);
-    } else if (val == 'rotating' || val == 'portal') {
-      rate = 5;
-
-    } else if (val === 'bonus') {
-      rate = 3;
-    } else {
-      rate = parseFloat(val) || 0;
-    }
+    const cardRate = getCardRewardRate(card, col);
+    const ownedBest = getBestOwnedCardForColumn(col);
+    const shouldUseOwned = useOwnedCardMix && ownedBest && ownedBest.rate > cardRate;
+    const rate = shouldUseOwned ? ownedBest.rate : cardRate;
 
     if (rate > 0) {
       const earned = spend * (rate / 100);
       total += earned;
-      breakdown.push({ label: col.label, spend, rate, earned });
+      breakdown.push({
+        label: col.label,
+        spend,
+        rate,
+        earned,
+        sourceName: shouldUseOwned ? ownedBest.card.name : card.name,
+        originalRate: cardRate,
+        swapped: shouldUseOwned
+      });
     }
   }
 
@@ -301,19 +539,35 @@ function renderRewards() {
     .map(card => ({ card, ...calcRewards(card) }))
     .sort((a, b) => b.total - a.total);
 
+  const modeText = useOwnedCardMix
+    ? 'Best mix: candidate card plus your existing cards when they earn more'
+    : 'Single-card mode: candidate card used for every purchase';
+
   section.innerHTML = `
-    <h3>Estimated ${label} rewards — by card</h3>
+    <div class="rewards-head">
+      <div>
+        <h3>Estimated ${label} rewards — by card</h3>
+        <p>${modeText}</p>
+      </div>
+      <label class="toggle-line">
+        <input type="checkbox" ${useOwnedCardMix ? 'checked' : ''} onchange="setOwnedCardMix(this.checked)">
+        Use my owned cards when they earn more
+      </label>
+    </div>
     <div class="rewards-grid">
       ${ranked.map((r, i) => `
         <div class="reward-card" style="${i === 0 ? 'border-color:#1a6b3c;' : ''}">
-          <div class="reward-card-name">${i === 0 ? '🏆 ' : ''}${r.card.name}</div>
+          <div class="reward-card-name">${i === 0 ? 'Best: ' : ''}${r.card.name}</div>
           <div class="reward-card-amount">$${r.total.toFixed(2)}</div>
           <div class="reward-card-sub">${label} cashback / rewards</div>
           ${r.breakdown.length ? `
             <div class="reward-card-breakdown">
               ${r.breakdown.map(b => `
-                <div>
-                  <span>${b.label} (${b.rate}%)</span>
+                <div class="${b.swapped ? 'owned-swap' : ''}">
+                  <span>
+                    ${b.label} (${b.rate}%)
+                    ${b.swapped ? `<small>${b.sourceName} beats ${r.card.name} ${b.originalRate}%</small>` : ''}
+                  </span>
                   <span>$${b.earned.toFixed(2)}</span>
                 </div>
               `).join('')}

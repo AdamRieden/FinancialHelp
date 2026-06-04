@@ -39,10 +39,15 @@
       </div>
       <div id="spending-inputs" class="spending-grid"></div>
       <div class="panel-foot">
-        <label style="font-size:13px">
-          <input type="checkbox" id="two-month-toggle" onchange="renderAll()">
-          &nbsp;Show 2-month estimate instead of monthly
-        </label>
+        <div class="panel-controls">
+          <label style="font-size:13px">
+            <input type="checkbox" id="two-month-toggle" onchange="renderAll()">
+            &nbsp;Show 2-month estimate instead of monthly
+          </label>
+          <button class="btn btn-outline btn-sm" id="portal-rate-btn" onclick="cyclePortalTravelRate()">
+            Portal travel: 5%
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -54,6 +59,9 @@
       <tbody id="table-body"></tbody>
     </table>
   </div>
+
+  <!-- OWNED CARDS -->
+  <div id="owned-cards-section" class="owned-cards-section"></div>
 
   <!-- REWARDS SUMMARY (below table) -->
   <div id="rewards-section" class="rewards-section"></div>
