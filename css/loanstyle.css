@@ -1,0 +1,554 @@
+/* ── Reset & Base ─────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Georgia, serif;
+  font-size: 14px;
+  background: #f5f5f0;
+  color: #222;
+  line-height: 1.5;
+}
+
+/* ── Back nav ─────────────────────────────────────── */
+
+.topnav {
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:.5rem 1.25rem;
+  display:flex;align-items:center;
+  gap:1rem;
+  position:sticky;
+  top:0;
+  z-index:50
+}
+.topnav a {
+  color:var(--muted);
+  font-family:var(--mono);
+  font-size:12px;
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  gap:5px;transition:color .15s
+}
+.topnav a:hover {
+  color:var(--text)
+}
+
+.topnav-title {
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--muted)
+}
+
+/* ── Layout ───────────────────────────────────────── */
+.shell {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #fff;
+  border-right: 1px solid #ccc;
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.main {
+  padding: 2rem;
+  overflow: auto;
+}
+
+/* ── Sidebar Sections ─────────────────────────────── */
+.sb-head {
+  padding: 1.25rem 1rem 1rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.sb-head h1 {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.sb-head p {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.sb-section {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.sb-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888;
+  margin-bottom: 0.6rem;
+}
+
+/* ── Loan Cards ───────────────────────────────────── */
+.loan-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.6rem;
+  margin-bottom: 0.5rem;
+  background: #fafafa;
+}
+
+.loan-card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.loan-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.loan-name-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  font-size: 13px;
+  font-weight: bold;
+  color: #222;
+  width: 80px;
+  outline: none;
+}
+
+.loan-name-input:focus {
+  border-bottom-color: #555;
+}
+
+.loan-tag {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid;
+}
+
+.tag-unsub {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-color: #a5d6a7;
+}
+
+.tag-sub {
+  background: #fff8e1;
+  color: #f57f17;
+  border-color: #ffe082;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.remove-btn:hover {
+  color: #c00;
+}
+
+.loan-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* ── Form Fields ──────────────────────────────────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.field label,
+.setting-row > label {
+  font-size: 11px;
+  color: #666;
+}
+
+.field input,
+.setting-input,
+.grace-row input[type="month"] {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 12px;
+  background: #fff;
+  color: #222;
+  outline: none;
+  width: 100%;
+}
+
+.field input:focus,
+.setting-input:focus,
+.grace-row input[type="month"]:focus {
+  border-color: #555;
+}
+
+/* hide number spinners */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+/* ── Budget Bar ───────────────────────────────────── */
+.budget-bar {
+  height: 4px;
+  background: #eee;
+  border-radius: 2px;
+  margin: 0.5rem 0;
+}
+
+.budget-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: #2e7d32;
+  transition: width 0.3s;
+}
+
+.budget-fill.over {
+  background: #c00;
+}
+
+.budget-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #666;
+}
+
+.warn-banner {
+  display: none;
+  font-size: 12px;
+  color: #c00;
+  margin-top: 4px;
+}
+
+/* ── Prepay Rows ──────────────────────────────────── */
+.prepay-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.prepay-name {
+  flex: 1;
+  font-size: 12px;
+  color: #444;
+}
+
+.prepay-input {
+  width: 90px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 12px;
+  background: #fff;
+  outline: none;
+}
+
+.prepay-input:focus {
+  border-color: #555;
+}
+
+/* ── Buttons ──────────────────────────────────────── */
+.add-loan-btn {
+  width: 100%;
+  padding: 6px;
+  background: transparent;
+  border: 1px dashed #bbb;
+  border-radius: 3px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+}
+
+.add-loan-btn:hover {
+  border-color: #555;
+  color: #333;
+}
+
+.auto-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 0.5rem;
+}
+
+.auto-btn {
+  font-size: 11px;
+  padding: 3px 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  color: #444;
+  cursor: pointer;
+}
+
+.auto-btn:hover {
+  border-color: #555;
+  color: #111;
+}
+
+/* ── Strategy Pills ───────────────────────────────── */
+.strategy-pills {
+  display: flex;
+  gap: 4px;
+}
+
+.strategy-pill {
+  flex: 1;
+  text-align: center;
+  padding: 5px 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  font-size: 11px;
+  color: #666;
+  cursor: pointer;
+}
+
+.strategy-pill.active {
+  background: #222;
+  color: #fff;
+  border-color: #222;
+}
+
+/* ── Slider ───────────────────────────────────────── */
+.setting-row {
+  margin-bottom: 0.75rem;
+}
+
+.slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-wrap input[type="range"] {
+  flex: 1;
+  accent-color: #222;
+}
+
+.slider-val {
+  font-size: 13px;
+  font-weight: bold;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* ── Grace Row ────────────────────────────────────── */
+.grace-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#grace-months-label {
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+}
+
+/* ── Main Area ────────────────────────────────────── */
+.main-head {
+  margin-bottom: 1.5rem;
+}
+
+.main-head h2 {
+  font-size: 22px;
+  font-weight: normal;
+}
+
+.main-head h2 span {
+  font-weight: bold;
+}
+
+/* ── Metrics ──────────────────────────────────────── */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.metric {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.75rem;
+}
+
+.metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.metric-val {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.metric-val.green { color: #2e7d32; }
+.metric-val.red   { color: #c00; }
+.metric-val.amber { color: #e65100; }
+
+.metric-sub {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+
+/* ── Tabs ─────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 1.25rem;
+}
+
+.tab {
+  padding: 6px 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: #222;
+  border-bottom-color: #222;
+}
+
+.tab:hover:not(.active) {
+  color: #444;
+}
+
+/* ── Chart Panel ──────────────────────────────────── */
+.chart-panel {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 0.75rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #555;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 260px;
+}
+
+/* ── Tables ───────────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 2px solid #ddd;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #666;
+  font-weight: normal;
+}
+
+.data-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td {
+  background: #fafafa;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+
+.grace-note {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    position: static;
+    height: auto;
+  }
+  .metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .main {
+    padding: 1rem;
+  }
+}

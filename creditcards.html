@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credit Card Comparison</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/creditcardstyle.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">← Home</a>
+  <span class="topnav-sep">|</span>
+  <span class="topnav-title">Credit Card Comparison</span>
+</nav>
+
+<div class="page">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Credit Card Comparison</h1>
+      <p>Add spending amounts to see estimated rewards per card</p>
+    </div>
+    <div class="topbar-right">
+      <button class="btn" onclick="openCardModal()">+ Add card</button>
+      <button class="btn" onclick="openColumnModal()">+ Add column</button>
+      <button class="btn btn-outline" onclick="toggleSpendingPanel()">Spending settings</button>
+    </div>
+  </header>
+
+  <!-- SPENDING PANEL (collapsible) -->
+  <div id="spending-panel" class="spending-panel" style="display:none">
+    <div class="spending-panel-inner">
+      <div class="panel-head">
+        <strong>Monthly spending by category</strong>
+        <span style="font-size:12px;color:#666;margin-left:8px">Used to estimate rewards earned per card</span>
+      </div>
+      <div id="spending-inputs" class="spending-grid"></div>
+      <div class="panel-foot">
+        <label style="font-size:13px">
+          <input type="checkbox" id="two-month-toggle" onchange="renderAll()">
+          &nbsp;Show 2-month estimate instead of monthly
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN TABLE AREA -->
+  <div class="table-wrap">
+    <table id="card-table" class="card-table">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- REWARDS SUMMARY (below table) -->
+  <div id="rewards-section" class="rewards-section"></div>
+
+</div><!-- end .page -->
+
+
+<!-- ── ADD/EDIT CARD MODAL ──────────────────────────────────── -->
+<div id="card-modal" class="modal-bg" style="display:none" onclick="closeCardModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <strong id="card-modal-title">Add card</strong>
+      <button class="modal-close" onclick="closeCardModal()">×</button>
+    </div>
+    <div id="card-modal-fields" class="modal-fields"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="saveCard()">Save</button>
+      <button class="btn btn-outline" onclick="closeCardModal()">Cancel</button>
+      <button class="btn btn-danger" id="delete-card-btn" onclick="deleteCard()" style="display:none">Delete card</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD/EDIT COLUMN MODAL ────────────────────────────────── -->
+<div id="col-modal" class="modal-bg" style="display:none" onclick="closeColumnModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <strong id="col-modal-title">Add column</strong>
+      <button class="modal-close" onclick="closeColumnModal()">×</button>
+    </div>
+    <div class="modal-fields">
+      <div class="field">
+        <label>Column name</label>
+        <input type="text" id="col-name-input" placeholder="e.g. Hotels">
+      </div>
+      <div class="field">
+        <label>Column type</label>
+        <select id="col-type-input">
+          <option value="reward">Reward rate (% cashback / points) — tracked in spending</option>
+          <option value="text">Text / notes — not tracked in spending</option>
+          <option value="bonus">Welcome bonus — not tracked in spending</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="saveColumn()">Save</button>
+      <button class="btn btn-outline" onclick="closeColumnModal()">Cancel</button>
+      <button class="btn btn-danger" id="delete-col-btn" onclick="deleteColumn()" style="display:none">Delete column</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/creditcardsapp.js"></script>
+</body>
+</html>
