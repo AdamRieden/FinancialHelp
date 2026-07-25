@@ -85,7 +85,7 @@ let cards = [
     welcome: '$200 for $1,000 spent in 3 months',
     bonus: 'Phone plan 3%',
     partners: 'JetBlue, Wyndham',
-  },
+  }
 ];
 
 let nextCardId = 8;
@@ -113,8 +113,8 @@ let ownedCards = [
     id: 'discover_it',
     name: 'Discover it',
     rates: {
-      travel: 1, gas: 'rotating', restaurants: 'rotating',
-      supermarkets: 'rotating', streaming: 1, drugstore: 'rotating',
+      travel: 'rotating', gas: 'rotating', restaurants: 'rotating',
+      supermarkets: 'rotating', streaming: 1, drugstore: 1,
       gym: 1, default: 1
     },
     benefits: '5% rotating categories when activated, 1% other purchases, no annual fee'
@@ -124,12 +124,22 @@ let ownedCards = [
     name: 'Fidelity Rewards Visa Signature',
     rates: { default: 2 },
     benefits: '2% cash back when redeemed into an eligible Fidelity account, no annual fee'
+  },
+    {
+    id: 'USBAConnect',
+    name: 'US Bank Altitude Connect',
+    rates: {
+      travel: 4, gas: 4, restaurants: 2,
+      supermarkets: 2, streaming: 2, drugstore: 1,
+      gym: 1, default: 1
+    },
+    benefits: 'Airport lounge access x4/year and travel protections, no annual fee'
   }
 ];
 
 let ownedRotatingConfig = {
   discover_it: {
-    categories: ['gas', 'restaurants', 'drugstore', 'supermarkets'],
+    categories: ['gas', 'restaurants', 'travel', 'supermarkets'],
     activeIndex: 0,
     activeRate: 5,
     fallbackRate: 1,
