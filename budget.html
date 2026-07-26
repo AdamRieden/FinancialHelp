@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moving Budget Planner</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/budgetstyle.css">
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">← Home</a>
+  <span class="topnav-sep">|</span>
+  <span class="topnav-title">Moving Budget Planner</span>
+</nav>
+
+<!-- Shown until signed in -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-card">
+    <h2>Sign in to sync your budget</h2>
+    <p>Use the same account on any device to see the same shared budget.</p>
+    <label>
+      Email
+      <input type="email" id="auth-email" autocomplete="email">
+    </label>
+    <label>
+      Password
+      <input type="password" id="auth-password" autocomplete="current-password">
+    </label>
+    <div class="auth-actions">
+      <button class="btn" onclick="handleSignIn()">Sign In</button>
+      <button class="btn btn-outline" onclick="handleSignUp()">Create Account</button>
+    </div>
+    <p id="auth-error" class="auth-error"></p>
+  </div>
+</div>
+
+<!-- Shown once signed in -->
+<div id="app-content" style="display:none;">
+  <div class="page">
+    <header class="topbar">
+      <div>
+        <h1>Moving Budget Planner</h1>
+        <p>Plan shared income, expenses, leftover cash, and a two-year safety target.</p>
+      </div>
+      <div class="topbar-right">
+        <div class="segmented" aria-label="Household size">
+          <button id="one-person-btn" class="active" onclick="setHouseholdSize(1)">1 person</button>
+          <button id="two-person-btn" onclick="setHouseholdSize(2)">2 people</button>
+        </div>
+        <span id="sync-status" class="sync-status"></span>
+        <button class="btn btn-outline btn-sm" onclick="refreshFromCloud()" title="Pull the latest shared copy">↻ Sync</button>
+        <button class="btn btn-outline" onclick="resetBudget()">Reset</button>
+        <button class="btn btn-outline btn-sm" onclick="handleSignOut()">Sign Out</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <div id="budget-sections" class="budget-sections"></div>
+      <section id="household-summary-section" class="panel household-summary-panel"></section>
+
+      <section class="panel savings-panel">
+        <div class="panel-head">
+          <div>
+            <h2>Two-Year Survival Target</h2>
+            <p>Edit average-life costs to estimate how much to save before moving.</p>
+          </div>
+          <button class="btn btn-sm" onclick="addSurvivalExpense()">+ Add cost</button>
+        </div>
+        <div class="savings-top">
+          <label>
+            Current saved
+            <input type="number" id="current-savings" min="0" step="100" value="5000" oninput="calculateBudget()">
+          </label>
+          <label>
+            Months until move
+            <input type="number" id="months-until-move" min="1" step="1" value="12" oninput="calculateBudget()">
+          </label>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="survival-table"></table>
+        </div>
+        <div id="savings-summary" class="savings-summary"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Firebase (only loaded on this page, doesn't affect the rest of the site) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/budgetapp.js"></script>
+</body>
+</html>
