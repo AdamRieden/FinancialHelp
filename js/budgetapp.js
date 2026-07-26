@@ -82,6 +82,20 @@ function firebaseReady() {
   return typeof auth !== 'undefined' && typeof db !== 'undefined';
 }
 
+// Firestore does not allow an array nested directly inside another array.
+// personExpenses is [ [...], [...] ], so we store/read it as { "0": [...], "1": [...] } instead.
+function personExpensesToStorable(pe) {
+  return { 0: pe[0] || [], 1: pe[1] || [] };
+}
+
+function personExpensesFromStorable(stored) {
+  if (Array.isArray(stored)) return stored; // legacy local-cache format
+  if (stored && typeof stored === 'object') {
+    return [stored['0'] || stored[0] || [], stored['1'] || stored[1] || []];
+  }
+  return personExpenses;
+}
+
 function buildStateObject() {
   const currentSavingsEl = document.getElementById('current-savings');
   const monthsUntilMoveEl = document.getElementById('months-until-move');
@@ -91,7 +105,7 @@ function buildStateObject() {
     nextExpenseIds,
     nextSurvivalId,
     people,
-    personExpenses,
+    personExpenses: personExpensesToStorable(personExpenses),
     survivalExpenses,
     currentSavings: currentSavingsEl ? currentSavingsEl.value : '5000',
     monthsUntilMove: monthsUntilMoveEl ? monthsUntilMoveEl.value : '12',
@@ -114,8 +128,8 @@ function applyState(state) {
   if (Array.isArray(state.people) && state.people.length === 2) {
     people = state.people;
   }
-  if (Array.isArray(state.personExpenses) && state.personExpenses.length === 2) {
-    personExpenses = state.personExpenses;
+  if (state.personExpenses) {
+    personExpenses = personExpensesFromStorable(state.personExpenses);
   }
   if (Array.isArray(state.survivalExpenses)) {
     survivalExpenses = state.survivalExpenses;
